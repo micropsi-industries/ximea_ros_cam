@@ -1,4 +1,5 @@
 #include "ximea_ros_cam/ximea_ros_cam.hpp"
+#include <math.h>
 
 namespace ximea_ros_cam {
 
@@ -148,8 +149,8 @@ void XimeaROSCam::initPubs() {
 
     if(this->publish_xi_image_info_) {
       this->cam_xi_image_info_pub_ =
-        this->private_nh_.advertise<ximea_ros_cam::XiImageInfo>(
-          "xi_image_info", 0);
+        this->private_nh_.advertise<sensor_msgs::CameraInfo>(
+          "camera_info", 0);
     }
 
     // Report end of function
@@ -781,29 +782,67 @@ void XimeaROSCam::frameCaptureCb() {
 
         }
 
-        // If active, publish xiGetImage info to ROS message
+        // // If active, publish xiGetImage info to ROS message
+        // if(this->publish_xi_image_info_) {
+        //   ximea_ros_cam::XiImageInfo xiImageInfoMsg;
+        //   xiImageInfoMsg.header.frame_id = this->cam_frameid_;
+        //   xiImageInfoMsg.header.stamp = timestamp;
+        //   xiImageInfoMsg.size = xi_img.size;
+        //   xiImageInfoMsg.bp_size = xi_img.bp_size;
+        //   xiImageInfoMsg.frm = xi_img.frm;
+        //   xiImageInfoMsg.width = xi_img.width;
+        //   xiImageInfoMsg.height = xi_img.height;
+        //   xiImageInfoMsg.nframe = xi_img.nframe;
+        //   xiImageInfoMsg.tsSec = xi_img.tsSec;
+        //   xiImageInfoMsg.tsUSec = xi_img.tsUSec;
+        //   xiImageInfoMsg.GPI_level = xi_img.GPI_level;
+        //   xiImageInfoMsg.black_level = xi_img.black_level;
+        //   xiImageInfoMsg.padding_x = xi_img.padding_x;
+        //   xiImageInfoMsg.AbsoluteOffsetX = xi_img.AbsoluteOffsetX;
+        //   xiImageInfoMsg.AbsoluteOffsetY = xi_img.AbsoluteOffsetY;
+        //   xiImageInfoMsg.exposure_time_us = xi_img.exposure_time_us;
+        //   xiImageInfoMsg.gain_db = xi_img.gain_db;
+        //   xiImageInfoMsg.acq_nframe = xi_img.acq_nframe;
+        //   xiImageInfoMsg.image_user_data = xi_img.image_user_data;
+        //   // xiGetImageMsg.exposure_sub_times_us = (unsigned int) xi_img.exposure_sub_times_us;
+        //   this->cam_xi_image_info_pub_.publish(xiImageInfoMsg);
+        // }
         if(this->publish_xi_image_info_) {
-          ximea_ros_cam::XiImageInfo xiImageInfoMsg;
+          sensor_msgs::CameraInfo xiImageInfoMsg;
           xiImageInfoMsg.header.frame_id = this->cam_frameid_;
           xiImageInfoMsg.header.stamp = timestamp;
-          xiImageInfoMsg.size = xi_img.size;
-          xiImageInfoMsg.bp_size = xi_img.bp_size;
-          xiImageInfoMsg.frm = xi_img.frm;
           xiImageInfoMsg.width = xi_img.width;
           xiImageInfoMsg.height = xi_img.height;
-          xiImageInfoMsg.nframe = xi_img.nframe;
-          xiImageInfoMsg.tsSec = xi_img.tsSec;
-          xiImageInfoMsg.tsUSec = xi_img.tsUSec;
-          xiImageInfoMsg.GPI_level = xi_img.GPI_level;
-          xiImageInfoMsg.black_level = xi_img.black_level;
-          xiImageInfoMsg.padding_x = xi_img.padding_x;
-          xiImageInfoMsg.AbsoluteOffsetX = xi_img.AbsoluteOffsetX;
-          xiImageInfoMsg.AbsoluteOffsetY = xi_img.AbsoluteOffsetY;
-          xiImageInfoMsg.exposure_time_us = xi_img.exposure_time_us;
-          xiImageInfoMsg.gain_db = xi_img.gain_db;
-          xiImageInfoMsg.acq_nframe = xi_img.acq_nframe;
-          xiImageInfoMsg.image_user_data = xi_img.image_user_data;
-          // xiGetImageMsg.exposure_sub_times_us = (unsigned int) xi_img.exposure_sub_times_us;
+
+          xiImageInfoMsg.K.at(0) = 2135.802578;
+          xiImageInfoMsg.K.at(2) = 844.009479;
+          xiImageInfoMsg.K.at(4) = 2204.641325;
+          xiImageInfoMsg.K.at(5) = 941.532464;
+          xiImageInfoMsg.K.at(8) = 1;
+
+          xiImageInfoMsg.P.at(0) = xiImageInfoMsg.K.at(0);
+          xiImageInfoMsg.P.at(1) = 0;
+          xiImageInfoMsg.P.at(2) = xiImageInfoMsg.K.at(2);
+          xiImageInfoMsg.P.at(3) = 0;
+          xiImageInfoMsg.P.at(4) = 0;
+          xiImageInfoMsg.P.at(5) = xiImageInfoMsg.K.at(4);
+          xiImageInfoMsg.P.at(6) = xiImageInfoMsg.K.at(5);
+          xiImageInfoMsg.P.at(7) = 0;
+          xiImageInfoMsg.P.at(8) = 0;
+          xiImageInfoMsg.P.at(9) = 0;
+          xiImageInfoMsg.P.at(10) = 1;
+          xiImageInfoMsg.P.at(11) = 0;
+
+          // set R (rotation matrix) values to identity matrix
+          xiImageInfoMsg.R.at(0) = 1.0;
+          xiImageInfoMsg.R.at(1) = 0.0;
+          xiImageInfoMsg.R.at(2) = 0.0;
+          xiImageInfoMsg.R.at(3) = 0.0;
+          xiImageInfoMsg.R.at(4) = 1.0;
+          xiImageInfoMsg.R.at(5) = 0.0;
+          xiImageInfoMsg.R.at(6) = 0.0;
+          xiImageInfoMsg.R.at(7) = 0.0;
+          xiImageInfoMsg.R.at(8) = 1.0;
           this->cam_xi_image_info_pub_.publish(xiImageInfoMsg);
         }
     }
